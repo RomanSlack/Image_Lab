@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Effects Workshop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Effect App Bar */
+        .effect-bar {
+            width: 60px;
+            background: #000;
+            border-right: 1px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 0;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .effect-icon-btn {
+            width: 44px;
+            height: 44px;
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1.5rem;
+            position: relative;
+        }
+
+        .effect-icon-btn:hover {
+            background: #141414;
+            border-color: #2a2a2a;
+        }
+
+        .effect-icon-btn.active {
+            background: #1a1a1a;
+            border-color: #4a9eff;
+        }
+
+        .effect-icon-btn.active::before {
+            content: '';
+            position: absolute;
+            left: -1px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2px;
+            height: 60%;
+            background: #4a9eff;
+        }
+
+        /* Controls Sidebar */
+        .controls-sidebar {
+            width: 280px;
+            background: #0a0a0a;
+            border-right: 1px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .controls-header {
+            padding: 20px;
+            border-bottom: 1px solid #1a1a1a;
+            flex-shrink: 0;
+        }
+
+        .effect-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .effect-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .controls-scroll {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .controls-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .controls-scroll::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .controls-scroll::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 3px;
+        }
+
+        .controls-scroll::-webkit-scrollbar-thumb:hover {
+            background: #3a3a3a;
+        }
+
+        .controls-content {
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .upload-zone {
+            border: 1px dashed #222;
+            border-radius: 6px;
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #000;
+        }
+
+        .upload-zone:hover {
+            border-color: #333;
+            background: #0f0f0f;
+        }
+
+        .upload-zone.dragover {
+            border-color: #4a9eff;
+            background: #0a1520;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            opacity: 0.4;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .image-info {
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        .param-group {
+            margin-bottom: 20px;
+        }
+
+        .param-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.75rem;
+        }
+
+        .param-name {
+            color: #999;
+        }
+
+        .param-value {
+            color: #4a9eff;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #1a1a1a;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #4a9eff;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #4a9eff;
+            cursor: pointer;
+            border: none;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #4a9eff;
+        }
+
+        .checkbox-label {
+            font-size: 0.75rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .controls-actions {
+            padding: 20px;
+            border-top: 1px solid #1a1a1a;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn-primary {
+            background: #4a9eff;
+            color: #000;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5aaaff;
+        }
+
+        .btn-secondary {
+            background: #1a1a1a;
+            color: #999;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            display: none;
+            text-align: center;
+        }
+
+        .status.success {
+            background: #0a2a0a;
+            color: #4eff4e;
+            border: 1px solid #1a4a1a;
+        }
+
+        .status.error {
+            background: #2a0a0a;
+            color: #ff4e4e;
+            border: 1px solid #4a1a1a;
+        }
+
+        /* Main Canvas Area */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .canvas-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid #1a1a1a;
+            flex-shrink: 0;
+        }
+
+        .canvas-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+        }
+
+        .canvas-content {
+            flex: 1;
+            overflow: auto;
+            padding: 30px;
+        }
+
+        .canvas-content::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .canvas-content::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .canvas-content::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 4px;
+        }
+
+        .placeholder {
+            color: #333;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .placeholder-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.2;
+        }
+
+        .placeholder-text {
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: #4a9eff;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #1a1a1a;
+            border-top-color: #4a9eff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 0.75rem;
+        }
+
+        .progress-bar-container {
+            width: 200px;
+            height: 4px;
+            background: #1a1a1a;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 15px auto 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #4a9eff;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .image-container {
+            display: none;
+            gap: 20px;
+            max-width: 100%;
+        }
+
+        .image-container.active {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+
+        .image-wrapper {
+            position: relative;
+        }
+
+        .image-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .image-frame {
+            background: #000;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #1a1a1a;
+        }
+
+        .image-frame img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .params-container {
+            display: none;
+        }
+
+        .params-container.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .controls-sidebar {
+                width: 260px;
+            }
+
+            .image-container.active {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .effect-bar {
+                width: 50px;
+            }
+
+            .effect-icon-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 1.3rem;
+            }
+
+            .controls-sidebar {
+                width: 240px;
+            }
+
+            .canvas-header {
+                padding: 15px 20px;
+            }
+
+            .canvas-content {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .controls-sidebar {
+                position: fixed;
+                left: 60px;
+                top: 0;
+                bottom: 0;
+                z-index: 100;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            }
+
+            .controls-sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .mobile-toggle {
+                position: fixed;
+                top: 15px;
+                left: 70px;
+                width: 40px;
+                height: 40px;
+                background: #1a1a1a;
+                border: 1px solid #2a2a2a;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                z-index: 101;
+                color: #999;
+                font-size: 1.2rem;
+            }
+
+            .canvas-area {
+                margin-left: 60px;
+            }
+        }
+
+        @media (min-width: 641px) {
+            .mobile-toggle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Effect Selection App Bar -->
+        <div class="effect-bar">
+            <div class="effect-icon-btn active" data-effect="paint_stroke" title="Paint Stroke">
+                🎨
+            </div>
+            <div class="effect-icon-btn" data-effect="japanese_calligraphy" title="Japanese Calligraphy">
+                🖌️
+            </div>
+            <div class="effect-icon-btn" data-effect="sumi_e_brush" title="Sumi-e Brush">
+                ✒️
+            </div>
+            <div class="effect-icon-btn" data-effect="oil_paint" title="Oil Paint">
+                🖼️
+            </div>
+            <div class="effect-icon-btn" data-effect="linocut" title="Linocut Print">
+                🪵
+            </div>
+        </div>
+
+        <!-- Mobile Toggle -->
+        <div class="mobile-toggle" id="mobileToggle">☰</div>
+
+        <!-- Controls Sidebar -->
+        <div class="controls-sidebar" id="controlsSidebar">
+            <div class="controls-header">
+                <div class="effect-title">Effect</div>
+                <div class="effect-name" id="currentEffectName">Paint Stroke</div>
+            </div>
+
+            <div class="controls-scroll">
+                <div class="controls-content">
+                    <!-- Upload Section -->
+                    <div class="section">
+                        <div class="section-label">Source</div>
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">
+                                Drop or click
+                            </div>
+                        </div>
+                        <input type="file" id="fileInput" accept="image/*">
+                        <div id="imageInfo" class="image-info"></div>
+                    </div>
+
+                    <!-- Paint Stroke Parameters -->
+                    <div class="params-container active" id="paintStrokeParams">
+                        <div class="section">
+                            <div class="section-label">Parameters</div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Stroke Size</span>
+                                    <span class="param-value" id="strokeSizeValue">8</span>
+                                </div>
+                                <input type="range" id="strokeSize" min="2" max="20" value="8" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Stroke Length</span>
+                                    <span class="param-value" id="strokeLengthValue">12</span>
+                                </div>
+                                <input type="range" id="strokeLength" min="5" max="30" value="12" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Stroke Width</span>
+                                    <span class="param-value" id="strokeWidthValue">3</span>
+                                </div>
+                                <input type="range" id="strokeWidth" min="1" max="8" value="3" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Angle Variation</span>
+                                    <span class="param-value" id="angleVariationValue">30°</span>
+                                </div>
+                                <input type="range" id="angleVariation" min="0" max="90" value="30" step="5">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Density</span>
+                                    <span class="param-value" id="densityValue">1.0</span>
+                                </div>
+                                <input type="range" id="density" min="0.1" max="2.0" value="1.0" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Japanese Calligraphy Parameters -->
+                    <div class="params-container" id="japaneseCalligraphyParams">
+                        <div class="section">
+                            <div class="section-label">Parameters</div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Brush Size</span>
+                                    <span class="param-value" id="brushSizeValue">12</span>
+                                </div>
+                                <input type="range" id="brushSize" min="4" max="30" value="12" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Stroke Length</span>
+                                    <span class="param-value" id="calligraphyLengthValue">25</span>
+                                </div>
+                                <input type="range" id="calligraphyLength" min="10" max="50" value="25" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Tail Taper</span>
+                                    <span class="param-value" id="tailTaperValue">0.7</span>
+                                </div>
+                                <input type="range" id="tailTaper" min="0.3" max="1.0" value="0.7" step="0.05">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Edge Influence</span>
+                                    <span class="param-value" id="edgeInfluenceValue">0.7</span>
+                                </div>
+                                <input type="range" id="edgeInfluence" min="0.0" max="1.0" value="0.7" step="0.1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Stroke Density</span>
+                                    <span class="param-value" id="calligraphyDensityValue">1.2</span>
+                                </div>
+                                <input type="range" id="calligraphyDensity" min="0.5" max="2.5" value="1.2" step="0.1">
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="followEdges" checked>
+                                <label for="followEdges" class="checkbox-label">Follow Edges</label>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="inkBleed" checked>
+                                <label for="inkBleed" class="checkbox-label">Ink Bleed</label>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="smartTreeMode">
+                                <label for="smartTreeMode" class="checkbox-label">Smart Tree Mode</label>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="directionalMode">
+                                <label for="directionalMode" class="checkbox-label">Custom Directional Mode</label>
+                            </div>
+
+                            <div id="directionalControls" style="display: none; margin-top: 15px; padding: 12px; background: #000; border-radius: 4px; border: 1px solid #1a1a1a;">
+                                <div style="font-size: 0.7rem; color: #888; margin-bottom: 10px;">Draw regions & set stroke angles</div>
+                                <button class="btn btn-secondary" id="addRegionBtn" style="margin-bottom: 8px; padding: 8px;">+ New Region</button>
+                                <div id="regionsList" style="max-height: 200px; overflow-y: auto;"></div>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="variableBrushSize">
+                                <label for="variableBrushSize" class="checkbox-label">Variable Brush Size</label>
+                            </div>
+
+                            <div id="variableBrushControls" style="display: none; margin-top: 15px; padding: 12px; background: #000; border-radius: 4px; border: 1px solid #1a1a1a;">
+                                <div style="font-size: 0.7rem; color: #888; margin-bottom: 12px;">Brush size range</div>
+
+                                <div class="param-group">
+                                    <div class="param-label">
+                                        <span class="param-name">Min Brush Size</span>
+                                        <span class="param-value" id="minBrushSizeCalligraphyValue">6</span>
+                                    </div>
+                                    <input type="range" id="minBrushSizeCalligraphy" min="2" max="20" value="6" step="1">
+                                </div>
+
+                                <div class="param-group">
+                                    <div class="param-label">
+                                        <span class="param-name">Max Brush Size</span>
+                                        <span class="param-value" id="maxBrushSizeCalligraphyValue">18</span>
+                                    </div>
+                                    <input type="range" id="maxBrushSizeCalligraphy" min="8" max="40" value="18" step="1">
+                                </div>
+
+                                <div class="param-group" style="margin-bottom: 0;">
+                                    <div class="param-label">
+                                        <span class="param-name">Size Variation</span>
+                                        <span class="param-value" id="sizeVariationValue">0.7</span>
+                                    </div>
+                                    <input type="range" id="sizeVariation" min="0.0" max="1.0" value="0.7" step="0.1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sumi-e Brush Parameters -->
+                    <div class="params-container" id="sumiEBrushParams">
+                        <div class="section">
+                            <div class="section-label">Parameters</div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Brush Size</span>
+                                    <span class="param-value" id="sumiEBrushSizeValue">15</span>
+                                </div>
+                                <input type="range" id="sumiEBrushSize" min="8" max="30" value="15" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Min Stroke Length</span>
+                                    <span class="param-value" id="minStrokeLengthValue">20</span>
+                                </div>
+                                <input type="range" id="minStrokeLength" min="10" max="40" value="20" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Max Stroke Length</span>
+                                    <span class="param-value" id="maxStrokeLengthValue">60</span>
+                                </div>
+                                <input type="range" id="maxStrokeLength" min="40" max="100" value="60" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Pressure Variation</span>
+                                    <span class="param-value" id="pressureVariationValue">0.8</span>
+                                </div>
+                                <input type="range" id="pressureVariation" min="0.3" max="1.0" value="0.8" step="0.05">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Texture Intensity</span>
+                                    <span class="param-value" id="textureIntensityValue">0.6</span>
+                                </div>
+                                <input type="range" id="textureIntensity" min="0.0" max="1.0" value="0.6" step="0.05">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Ink Dispersion</span>
+                                    <span class="param-value" id="inkDispersionValue">0.4</span>
+                                </div>
+                                <input type="range" id="inkDispersion" min="0.0" max="1.0" value="0.4" step="0.05">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Flow Coherence</span>
+                                    <span class="param-value" id="flowCoherenceValue">0.75</span>
+                                </div>
+                                <input type="range" id="flowCoherence" min="0.0" max="1.0" value="0.75" step="0.05">
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="paperTexture" checked>
+                                <label for="paperTexture" class="checkbox-label">Paper Texture</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Oil Paint Parameters -->
+                    <div class="params-container" id="oilPaintParams">
+                        <div class="section">
+                            <div class="section-label">Parameters</div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Min Brush Size</span>
+                                    <span class="param-value" id="minBrushSizeValue">8</span>
+                                </div>
+                                <input type="range" id="minBrushSize" min="4" max="15" value="8" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Max Brush Size</span>
+                                    <span class="param-value" id="maxBrushSizeValue">25</span>
+                                </div>
+                                <input type="range" id="maxBrushSize" min="15" max="40" value="25" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Stroke Length</span>
+                                    <span class="param-value" id="strokeLengthMultValue">2.5</span>
+                                </div>
+                                <input type="range" id="strokeLengthMult" min="1.5" max="4.0" value="2.5" step="0.1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Impasto Strength</span>
+                                    <span class="param-value" id="impastoStrengthValue">0.7</span>
+                                </div>
+                                <input type="range" id="impastoStrength" min="0.3" max="1.0" value="0.7" step="0.05">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Color Blend</span>
+                                    <span class="param-value" id="colorBlendValue">0.5</span>
+                                </div>
+                                <input type="range" id="colorBlend" min="0.0" max="1.0" value="0.5" step="0.05">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Detail Sensitivity</span>
+                                    <span class="param-value" id="detailSensitivityValue">0.6</span>
+                                </div>
+                                <input type="range" id="detailSensitivity" min="0.0" max="1.0" value="0.6" step="0.05">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Flow Coherence</span>
+                                    <span class="param-value" id="strokeCoherenceValue">0.8</span>
+                                </div>
+                                <input type="range" id="strokeCoherence" min="0.0" max="1.0" value="0.8" step="0.05">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Paint Thickness</span>
+                                    <span class="param-value" id="paintThicknessValue">0.6</span>
+                                </div>
+                                <input type="range" id="paintThickness" min="0.2" max="1.0" value="0.6" step="0.05">
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="fastMode" checked>
+                                <label for="fastMode" class="checkbox-label">Fast Mode (Recommended)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Linocut Parameters -->
+                    <div class="params-container" id="linocutParams">
+                        <div class="section">
+                            <div class="section-label">Parameters</div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Number of Colors</span>
+                                    <span class="param-value" id="numColorsValue">4</span>
+                                </div>
+                                <input type="range" id="numColors" min="2" max="8" value="4" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Color Boost</span>
+                                    <span class="param-value" id="colorBoostValue">1.3</span>
+                                </div>
+                                <input type="range" id="colorBoost" min="0.8" max="2.0" value="1.3" step="0.1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Outline Thickness</span>
+                                    <span class="param-value" id="outlineThicknessValue">2</span>
+                                </div>
+                                <input type="range" id="outlineThickness" min="0" max="5" value="2" step="1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Texture Intensity</span>
+                                    <span class="param-value" id="linocutTextureValue">0.6</span>
+                                </div>
+                                <input type="range" id="linocutTexture" min="0.0" max="1.0" value="0.6" step="0.05">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Contrast</span>
+                                    <span class="param-value" id="linocutContrastValue">1.2</span>
+                                </div>
+                                <input type="range" id="linocutContrast" min="0.8" max="2.0" value="1.2" step="0.1">
+                            </div>
+
+                            <div class="param-group">
+                                <div class="param-label">
+                                    <span class="param-name">Carve Direction</span>
+                                    <span class="param-value" id="carveDirectionValue">Mixed</span>
+                                </div>
+                                <select id="carveDirection" style="width: 100%; padding: 8px; background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 4px; color: #e0e0e0; font-size: 0.75rem; font-family: 'Courier New', monospace;">
+                                    <option value="mixed">Mixed</option>
+                                    <option value="horizontal">Horizontal</option>
+                                    <option value="vertical">Vertical</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="controls-actions">
+                <button class="btn btn-primary" id="applyBtn" disabled>Apply</button>
+                <button class="btn btn-secondary" id="downloadBtn" disabled>Download</button>
+                <div id="status" class="status"></div>
+            </div>
+        </div>
+
+        <!-- Main Canvas -->
+        <div class="canvas-area">
+            <div class="canvas-header">
+                <div class="canvas-title" id="canvasTitle">Image Effects Workshop</div>
+            </div>
+
+            <div class="canvas-content">
+                <div style="position: relative; min-height: 400px;">
+                    <div class="placeholder" id="placeholder">
+                        <div class="placeholder-icon">⚡</div>
+                        <div class="placeholder-text">Drop an image to begin</div>
+                    </div>
+
+                    <div class="loading" id="loading" style="display: none;">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Processing...</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+
+                    <div class="image-container" id="imageContainer">
+                        <div class="image-wrapper">
+                            <div class="image-label">Original</div>
+                            <div class="image-frame" style="position: relative;">
+                                <img id="originalImage" src="" alt="Original">
+                                <canvas id="drawingCanvas" style="position: absolute; top: 0; left: 0; cursor: crosshair; display: none;"></canvas>
+                            </div>
+                        </div>
+                        <div class="image-wrapper">
+                            <div class="image-label" id="processedLabel">Processed</div>
+                            <div class="image-frame">
+                                <img id="processedImage" src="" alt="Processed">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilename = null;
+        let isProcessing = false;
+        let currentEffect = 'paint_stroke';
+
+        // Elements
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const applyBtn = document.getElementById('applyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const placeholder = document.getElementById('placeholder');
+        const loading = document.getElementById('loading');
+        const imageContainer = document.getElementById('imageContainer');
+        const originalImage = document.getElementById('originalImage');
+        const processedImage = document.getElementById('processedImage');
+        const status = document.getElementById('status');
+        const imageInfo = document.getElementById('imageInfo');
+        const currentEffectName = document.getElementById('currentEffectName');
+        const processedLabel = document.getElementById('processedLabel');
+        const mobileToggle = document.getElementById('mobileToggle');
+        const controlsSidebar = document.getElementById('controlsSidebar');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        // Mobile toggle
+        mobileToggle.addEventListener('click', () => {
+            controlsSidebar.classList.toggle('mobile-open');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 640 &&
+                !controlsSidebar.contains(e.target) &&
+                !mobileToggle.contains(e.target) &&
+                controlsSidebar.classList.contains('mobile-open')) {
+                controlsSidebar.classList.remove('mobile-open');
+            }
+        });
+
+        // Effect selector
+        const effectBtns = document.querySelectorAll('.effect-icon-btn');
+        effectBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                effectBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentEffect = btn.dataset.effect;
+
+                // Update UI
+                document.querySelectorAll('.params-container').forEach(p => p.classList.remove('active'));
+                if (currentEffect === 'paint_stroke') {
+                    document.getElementById('paintStrokeParams').classList.add('active');
+                    currentEffectName.textContent = 'Paint Stroke';
+                    processedLabel.textContent = 'Paint Stroke';
+                } else if (currentEffect === 'japanese_calligraphy') {
+                    document.getElementById('japaneseCalligraphyParams').classList.add('active');
+                    currentEffectName.textContent = 'Japanese Calligraphy';
+                    processedLabel.textContent = 'Calligraphy';
+                } else if (currentEffect === 'sumi_e_brush') {
+                    document.getElementById('sumiEBrushParams').classList.add('active');
+                    currentEffectName.textContent = 'Sumi-e Brush';
+                    processedLabel.textContent = 'Sumi-e';
+                } else if (currentEffect === 'oil_paint') {
+                    document.getElementById('oilPaintParams').classList.add('active');
+                    currentEffectName.textContent = 'Oil Paint';
+                    processedLabel.textContent = 'Oil Paint';
+                } else if (currentEffect === 'linocut') {
+                    document.getElementById('linocutParams').classList.add('active');
+                    currentEffectName.textContent = 'Linocut Print';
+                    processedLabel.textContent = 'Linocut';
+                }
+            });
+        });
+
+        // Parameter inputs - Paint Stroke
+        const paintParams = {
+            strokeSize: document.getElementById('strokeSize'),
+            strokeLength: document.getElementById('strokeLength'),
+            strokeWidth: document.getElementById('strokeWidth'),
+            angleVariation: document.getElementById('angleVariation'),
+            density: document.getElementById('density')
+        };
+
+        // Parameter inputs - Japanese Calligraphy
+        const calligraphyParams = {
+            brushSize: document.getElementById('brushSize'),
+            calligraphyLength: document.getElementById('calligraphyLength'),
+            tailTaper: document.getElementById('tailTaper'),
+            edgeInfluence: document.getElementById('edgeInfluence'),
+            calligraphyDensity: document.getElementById('calligraphyDensity'),
+            followEdges: document.getElementById('followEdges'),
+            inkBleed: document.getElementById('inkBleed'),
+            smartTreeMode: document.getElementById('smartTreeMode'),
+            directionalMode: document.getElementById('directionalMode'),
+            variableBrushSize: document.getElementById('variableBrushSize'),
+            minBrushSizeCalligraphy: document.getElementById('minBrushSizeCalligraphy'),
+            maxBrushSizeCalligraphy: document.getElementById('maxBrushSizeCalligraphy'),
+            sizeVariation: document.getElementById('sizeVariation')
+        };
+
+        // Directional drawing state
+        let directionalRegions = [];
+        let currentRegion = null;
+        let isDrawing = false;
+        const drawingCanvas = document.getElementById('drawingCanvas');
+        const drawingCtx = drawingCanvas.getContext('2d');
+        const directionalControls = document.getElementById('directionalControls');
+        const addRegionBtn = document.getElementById('addRegionBtn');
+        const regionsList = document.getElementById('regionsList');
+        const variableBrushControls = document.getElementById('variableBrushControls');
+
+        // Parameter inputs - Sumi-e Brush
+        const sumiEParams = {
+            sumiEBrushSize: document.getElementById('sumiEBrushSize'),
+            minStrokeLength: document.getElementById('minStrokeLength'),
+            maxStrokeLength: document.getElementById('maxStrokeLength'),
+            pressureVariation: document.getElementById('pressureVariation'),
+            textureIntensity: document.getElementById('textureIntensity'),
+            inkDispersion: document.getElementById('inkDispersion'),
+            flowCoherence: document.getElementById('flowCoherence'),
+            paperTexture: document.getElementById('paperTexture')
+        };
+
+        // Parameter inputs - Oil Paint
+        const oilPaintParams = {
+            minBrushSize: document.getElementById('minBrushSize'),
+            maxBrushSize: document.getElementById('maxBrushSize'),
+            strokeLengthMult: document.getElementById('strokeLengthMult'),
+            impastoStrength: document.getElementById('impastoStrength'),
+            colorBlend: document.getElementById('colorBlend'),
+            detailSensitivity: document.getElementById('detailSensitivity'),
+            strokeCoherence: document.getElementById('strokeCoherence'),
+            paintThickness: document.getElementById('paintThickness'),
+            fastMode: document.getElementById('fastMode')
+        };
+
+        // Parameter inputs - Linocut
+        const linocutParams = {
+            numColors: document.getElementById('numColors'),
+            colorBoost: document.getElementById('colorBoost'),
+            outlineThickness: document.getElementById('outlineThickness'),
+            linocutTexture: document.getElementById('linocutTexture'),
+            linocutContrast: document.getElementById('linocutContrast'),
+            carveDirection: document.getElementById('carveDirection')
+        };
+
+        // Update parameter displays - Paint Stroke
+        Object.keys(paintParams).forEach(key => {
+            const input = paintParams[key];
+            const display = document.getElementById(key + 'Value');
+
+            input.addEventListener('input', () => {
+                let value = input.value;
+                if (key === 'angleVariation') value += '°';
+                display.textContent = value;
+            });
+        });
+
+        // Update parameter displays - Japanese Calligraphy
+        Object.keys(calligraphyParams).forEach(key => {
+            const input = calligraphyParams[key];
+            if (input.type === 'range') {
+                const display = document.getElementById(key + 'Value');
+                input.addEventListener('input', () => {
+                    display.textContent = input.value;
+                });
+            }
+        });
+
+        // Update parameter displays - Sumi-e Brush
+        Object.keys(sumiEParams).forEach(key => {
+            const input = sumiEParams[key];
+            if (input.type === 'range') {
+                const display = document.getElementById(key + 'Value');
+                input.addEventListener('input', () => {
+                    display.textContent = input.value;
+                });
+            }
+        });
+
+        // Update parameter displays - Oil Paint
+        Object.keys(oilPaintParams).forEach(key => {
+            const input = oilPaintParams[key];
+            const display = document.getElementById(key + 'Value');
+            input.addEventListener('input', () => {
+                display.textContent = input.value;
+            });
+        });
+
+        // Update parameter displays - Linocut
+        Object.keys(linocutParams).forEach(key => {
+            const input = linocutParams[key];
+            if (input.type === 'range') {
+                const display = document.getElementById(key + 'Value');
+                input.addEventListener('input', () => {
+                    display.textContent = input.value;
+                });
+            } else if (input.tagName === 'SELECT') {
+                const display = document.getElementById(key + 'Value');
+                input.addEventListener('change', () => {
+                    display.textContent = input.options[input.selectedIndex].text;
+                });
+            }
+        });
+
+        // Directional mode toggle
+        calligraphyParams.directionalMode.addEventListener('change', () => {
+            if (calligraphyParams.directionalMode.checked) {
+                directionalControls.style.display = 'block';
+                drawingCanvas.style.display = 'block';
+                resizeCanvas();
+            } else {
+                directionalControls.style.display = 'none';
+                drawingCanvas.style.display = 'none';
+            }
+        });
+
+        // Variable brush size toggle
+        calligraphyParams.variableBrushSize.addEventListener('change', () => {
+            if (calligraphyParams.variableBrushSize.checked) {
+                variableBrushControls.style.display = 'block';
+            } else {
+                variableBrushControls.style.display = 'none';
+            }
+        });
+
+        // Update variable brush size displays
+        calligraphyParams.minBrushSizeCalligraphy.addEventListener('input', () => {
+            document.getElementById('minBrushSizeCalligraphyValue').textContent = calligraphyParams.minBrushSizeCalligraphy.value;
+        });
+
+        calligraphyParams.maxBrushSizeCalligraphy.addEventListener('input', () => {
+            document.getElementById('maxBrushSizeCalligraphyValue').textContent = calligraphyParams.maxBrushSizeCalligraphy.value;
+        });
+
+        calligraphyParams.sizeVariation.addEventListener('input', () => {
+            document.getElementById('sizeVariationValue').textContent = calligraphyParams.sizeVariation.value;
+        });
+
+        // Resize canvas to match image
+        function resizeCanvas() {
+            const img = originalImage;
+            if (img.complete && img.naturalWidth > 0) {
+                drawingCanvas.width = img.clientWidth;
+                drawingCanvas.height = img.clientHeight;
+                redrawAllRegions();
+            }
+        }
+
+        // Add new region
+        addRegionBtn.addEventListener('click', () => {
+            const regionId = Date.now();
+            const region = {
+                id: regionId,
+                path: [],
+                angle: 0,
+                color: `hsl(${Math.random() * 360}, 70%, 50%)`
+            };
+
+            currentRegion = region;
+            directionalRegions.push(region);
+
+            addRegionToList(region);
+            showStatus('Draw a region on the image', 'success');
+        });
+
+        // Add region to sidebar list
+        function addRegionToList(region) {
+            const regionItem = document.createElement('div');
+            regionItem.id = `region-${region.id}`;
+            regionItem.style.cssText = 'margin-bottom: 10px; padding: 10px; background: #0f0f0f; border-radius: 4px; border: 1px solid #2a2a2a;';
+
+            regionItem.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: ${region.color}; border: 1px solid #444;"></div>
+                    <span style="font-size: 0.7rem; color: #888; flex: 1;">Region ${directionalRegions.indexOf(region) + 1}</span>
+                    <button class="delete-region" data-id="${region.id}" style="background: none; border: none; color: #ff4e4e; cursor: pointer; font-size: 0.9rem; padding: 0 4px;">×</button>
+                </div>
+                <div style="font-size: 0.7rem; color: #666; margin-bottom: 6px;">Stroke Angle</div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="range" class="region-angle" data-id="${region.id}" min="0" max="360" value="${region.angle}" step="5"
+                           style="flex: 1; height: 4px; border-radius: 2px; background: #1a1a1a; outline: none; -webkit-appearance: none;">
+                    <span class="angle-value" style="color: #4a9eff; font-size: 0.7rem; min-width: 35px;">${region.angle}°</span>
+                </div>
+            `;
+
+            regionsList.appendChild(regionItem);
+
+            // Angle slider
+            const angleSlider = regionItem.querySelector('.region-angle');
+            const angleValue = regionItem.querySelector('.angle-value');
+            angleSlider.addEventListener('input', () => {
+                region.angle = parseInt(angleSlider.value);
+                angleValue.textContent = region.angle + '°';
+                redrawAllRegions();
+            });
+
+            // Delete button
+            const deleteBtn = regionItem.querySelector('.delete-region');
+            deleteBtn.addEventListener('click', () => {
+                directionalRegions = directionalRegions.filter(r => r.id !== region.id);
+                regionItem.remove();
+                redrawAllRegions();
+            });
+        }
+
+        // Canvas drawing
+        drawingCanvas.addEventListener('mousedown', (e) => {
+            if (!currentRegion || currentRegion.path.length > 0) return;
+
+            isDrawing = true;
+            const rect = drawingCanvas.getBoundingClientRect();
+            currentRegion.path = [{
+                x: (e.clientX - rect.left) / drawingCanvas.width,
+                y: (e.clientY - rect.top) / drawingCanvas.height
+            }];
+        });
+
+        drawingCanvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing || !currentRegion) return;
+
+            const rect = drawingCanvas.getBoundingClientRect();
+            currentRegion.path.push({
+                x: (e.clientX - rect.left) / drawingCanvas.width,
+                y: (e.clientY - rect.top) / drawingCanvas.height
+            });
+
+            redrawAllRegions();
+        });
+
+        drawingCanvas.addEventListener('mouseup', () => {
+            if (isDrawing && currentRegion && currentRegion.path.length > 2) {
+                // Close the path
+                currentRegion.path.push(currentRegion.path[0]);
+                redrawAllRegions();
+            }
+            isDrawing = false;
+            currentRegion = null;
+        });
+
+        // Redraw all regions
+        function redrawAllRegions() {
+            drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+
+            directionalRegions.forEach(region => {
+                if (region.path.length < 2) return;
+
+                // Draw filled region
+                drawingCtx.fillStyle = region.color + '40';
+                drawingCtx.strokeStyle = region.color;
+                drawingCtx.lineWidth = 2;
+
+                drawingCtx.beginPath();
+                drawingCtx.moveTo(
+                    region.path[0].x * drawingCanvas.width,
+                    region.path[0].y * drawingCanvas.height
+                );
+
+                for (let i = 1; i < region.path.length; i++) {
+                    drawingCtx.lineTo(
+                        region.path[i].x * drawingCanvas.width,
+                        region.path[i].y * drawingCanvas.height
+                    );
+                }
+
+                drawingCtx.closePath();
+                drawingCtx.fill();
+                drawingCtx.stroke();
+
+                // Draw angle indicator
+                if (region.path.length > 0) {
+                    const centerX = region.path.reduce((sum, p) => sum + p.x, 0) / region.path.length * drawingCanvas.width;
+                    const centerY = region.path.reduce((sum, p) => sum + p.y, 0) / region.path.length * drawingCanvas.height;
+
+                    const angleRad = (region.angle - 90) * Math.PI / 180;
+                    const lineLen = 30;
+
+                    drawingCtx.strokeStyle = '#fff';
+                    drawingCtx.lineWidth = 2;
+                    drawingCtx.beginPath();
+                    drawingCtx.moveTo(centerX, centerY);
+                    drawingCtx.lineTo(
+                        centerX + Math.cos(angleRad) * lineLen,
+                        centerY + Math.sin(angleRad) * lineLen
+                    );
+                    drawingCtx.stroke();
+
+                    // Arrowhead
+                    const arrowSize = 8;
+                    drawingCtx.beginPath();
+                    drawingCtx.moveTo(
+                        centerX + Math.cos(angleRad) * lineLen,
+                        centerY + Math.sin(angleRad) * lineLen
+                    );
+                    drawingCtx.lineTo(
+                        centerX + Math.cos(angleRad - 0.5) * (lineLen - arrowSize),
+                        centerY + Math.sin(angleRad - 0.5) * (lineLen - arrowSize)
+                    );
+                    drawingCtx.lineTo(
+                        centerX + Math.cos(angleRad + 0.5) * (lineLen - arrowSize),
+                        centerY + Math.sin(angleRad + 0.5) * (lineLen - arrowSize)
+                    );
+                    drawingCtx.closePath();
+                    drawingCtx.fillStyle = '#fff';
+                    drawingCtx.fill();
+                }
+            });
+        }
+
+        // Resize canvas when image loads
+        originalImage.addEventListener('load', () => {
+            if (calligraphyParams.directionalMode.checked) {
+                resizeCanvas();
+            }
+        });
+
+        // Drag and drop
+        uploadZone.addEventListener('click', () => fileInput.click());
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Handle file upload
+        async function handleFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showStatus('Uploading...', 'success');
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentFilename = data.filename;
+                    originalImage.src = `/uploads/${data.filename}`;
+                    processedImage.src = '';
+
+                    placeholder.style.display = 'none';
+                    imageContainer.classList.add('active');
+                    applyBtn.disabled = false;
+
+                    imageInfo.textContent = `${data.width} × ${data.height}`;
+                    showStatus('Ready', 'success');
+                } else {
+                    showStatus(data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Upload failed', 'error');
+            }
+        }
+
+        // Apply effect
+        applyBtn.addEventListener('click', async () => {
+            if (!currentFilename || isProcessing) return;
+
+            isProcessing = true;
+            applyBtn.disabled = true;
+            downloadBtn.disabled = true;
+            loading.style.display = 'block';
+            imageContainer.classList.remove('active');
+
+            // Reset progress
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + '%';
+                progressText.textContent = Math.round(progress) + '%';
+            }, 500);
+
+            let effectParams = {};
+
+            if (currentEffect === 'paint_stroke') {
+                effectParams = {
+                    stroke_size: parseInt(paintParams.strokeSize.value),
+                    stroke_length: parseInt(paintParams.strokeLength.value),
+                    stroke_width: parseInt(paintParams.strokeWidth.value),
+                    angle_variation: parseInt(paintParams.angleVariation.value),
+                    density: parseFloat(paintParams.density.value)
+                };
+            } else if (currentEffect === 'japanese_calligraphy') {
+                effectParams = {
+                    brush_size: parseInt(calligraphyParams.brushSize.value),
+                    stroke_length: parseInt(calligraphyParams.calligraphyLength.value),
+                    tail_taper: parseFloat(calligraphyParams.tailTaper.value),
+                    edge_influence: parseFloat(calligraphyParams.edgeInfluence.value),
+                    density: parseFloat(calligraphyParams.calligraphyDensity.value),
+                    follow_edges: calligraphyParams.followEdges.checked,
+                    ink_bleed: calligraphyParams.inkBleed.checked,
+                    smart_tree_mode: calligraphyParams.smartTreeMode.checked,
+                    directional_mode: calligraphyParams.directionalMode.checked,
+                    directional_regions: directionalRegions.map(r => ({
+                        path: r.path,
+                        angle: r.angle
+                    })),
+                    variable_brush_size: calligraphyParams.variableBrushSize.checked,
+                    min_brush_size: parseInt(calligraphyParams.minBrushSizeCalligraphy.value),
+                    max_brush_size: parseInt(calligraphyParams.maxBrushSizeCalligraphy.value),
+                    size_variation: parseFloat(calligraphyParams.sizeVariation.value)
+                };
+            } else if (currentEffect === 'sumi_e_brush') {
+                effectParams = {
+                    brush_size: parseInt(sumiEParams.sumiEBrushSize.value),
+                    min_stroke_length: parseInt(sumiEParams.minStrokeLength.value),
+                    max_stroke_length: parseInt(sumiEParams.maxStrokeLength.value),
+                    pressure_variation: parseFloat(sumiEParams.pressureVariation.value),
+                    texture_intensity: parseFloat(sumiEParams.textureIntensity.value),
+                    ink_dispersion: parseFloat(sumiEParams.inkDispersion.value),
+                    flow_coherence: parseFloat(sumiEParams.flowCoherence.value),
+                    paper_texture: sumiEParams.paperTexture.checked
+                };
+            } else if (currentEffect === 'oil_paint') {
+                effectParams = {
+                    min_brush_size: parseInt(oilPaintParams.minBrushSize.value),
+                    max_brush_size: parseInt(oilPaintParams.maxBrushSize.value),
+                    stroke_length_mult: parseFloat(oilPaintParams.strokeLengthMult.value),
+                    impasto_strength: parseFloat(oilPaintParams.impastoStrength.value),
+                    color_blend: parseFloat(oilPaintParams.colorBlend.value),
+                    detail_sensitivity: parseFloat(oilPaintParams.detailSensitivity.value),
+                    stroke_direction_coherence: parseFloat(oilPaintParams.strokeCoherence.value),
+                    paint_thickness: parseFloat(oilPaintParams.paintThickness.value),
+                    fast_mode: oilPaintParams.fastMode.checked
+                };
+            } else if (currentEffect === 'linocut') {
+                effectParams = {
+                    num_colors: parseInt(linocutParams.numColors.value),
+                    color_boost: parseFloat(linocutParams.colorBoost.value),
+                    outline_thickness: parseInt(linocutParams.outlineThickness.value),
+                    texture_intensity: parseFloat(linocutParams.linocutTexture.value),
+                    contrast: parseFloat(linocutParams.linocutContrast.value),
+                    carve_direction: linocutParams.carveDirection.value
+                };
+            }
+
+            try {
+                const response = await fetch('/apply_effect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: currentFilename,
+                        effect: currentEffect,
+                        params: effectParams
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Complete progress
+                    clearInterval(progressInterval);
+                    progressBar.style.width = '100%';
+                    progressText.textContent = '100%';
+
+                    processedImage.src = data.image;
+                    downloadBtn.disabled = false;
+                    showStatus('Complete', 'success');
+                } else {
+                    clearInterval(progressInterval);
+                    showStatus(data.error, 'error');
+                }
+            } catch (error) {
+                clearInterval(progressInterval);
+                showStatus('Failed', 'error');
+            } finally {
+                isProcessing = false;
+                applyBtn.disabled = false;
+                loading.style.display = 'none';
+                imageContainer.classList.add('active');
+            }
+        });
+
+        // Download result
+        downloadBtn.addEventListener('click', async () => {
+            if (!currentFilename) return;
+
+            showStatus('Preparing...', 'success');
+
+            let effectParams = {};
+
+            if (currentEffect === 'paint_stroke') {
+                effectParams = {
+                    stroke_size: parseInt(paintParams.strokeSize.value),
+                    stroke_length: parseInt(paintParams.strokeLength.value),
+                    stroke_width: parseInt(paintParams.strokeWidth.value),
+                    angle_variation: parseInt(paintParams.angleVariation.value),
+                    density: parseFloat(paintParams.density.value)
+                };
+            } else if (currentEffect === 'japanese_calligraphy') {
+                effectParams = {
+                    brush_size: parseInt(calligraphyParams.brushSize.value),
+                    stroke_length: parseInt(calligraphyParams.calligraphyLength.value),
+                    tail_taper: parseFloat(calligraphyParams.tailTaper.value),
+                    edge_influence: parseFloat(calligraphyParams.edgeInfluence.value),
+                    density: parseFloat(calligraphyParams.calligraphyDensity.value),
+                    follow_edges: calligraphyParams.followEdges.checked,
+                    ink_bleed: calligraphyParams.inkBleed.checked,
+                    smart_tree_mode: calligraphyParams.smartTreeMode.checked,
+                    directional_mode: calligraphyParams.directionalMode.checked,
+                    directional_regions: directionalRegions.map(r => ({
+                        path: r.path,
+                        angle: r.angle
+                    })),
+                    variable_brush_size: calligraphyParams.variableBrushSize.checked,
+                    min_brush_size: parseInt(calligraphyParams.minBrushSizeCalligraphy.value),
+                    max_brush_size: parseInt(calligraphyParams.maxBrushSizeCalligraphy.value),
+                    size_variation: parseFloat(calligraphyParams.sizeVariation.value)
+                };
+            } else if (currentEffect === 'sumi_e_brush') {
+                effectParams = {
+                    brush_size: parseInt(sumiEParams.sumiEBrushSize.value),
+                    min_stroke_length: parseInt(sumiEParams.minStrokeLength.value),
+                    max_stroke_length: parseInt(sumiEParams.maxStrokeLength.value),
+                    pressure_variation: parseFloat(sumiEParams.pressureVariation.value),
+                    texture_intensity: parseFloat(sumiEParams.textureIntensity.value),
+                    ink_dispersion: parseFloat(sumiEParams.inkDispersion.value),
+                    flow_coherence: parseFloat(sumiEParams.flowCoherence.value),
+                    paper_texture: sumiEParams.paperTexture.checked
+                };
+            } else if (currentEffect === 'oil_paint') {
+                effectParams = {
+                    min_brush_size: parseInt(oilPaintParams.minBrushSize.value),
+                    max_brush_size: parseInt(oilPaintParams.maxBrushSize.value),
+                    stroke_length_mult: parseFloat(oilPaintParams.strokeLengthMult.value),
+                    impasto_strength: parseFloat(oilPaintParams.impastoStrength.value),
+                    color_blend: parseFloat(oilPaintParams.colorBlend.value),
+                    detail_sensitivity: parseFloat(oilPaintParams.detailSensitivity.value),
+                    stroke_direction_coherence: parseFloat(oilPaintParams.strokeCoherence.value),
+                    paint_thickness: parseFloat(oilPaintParams.paintThickness.value),
+                    fast_mode: oilPaintParams.fastMode.checked
+                };
+            } else if (currentEffect === 'linocut') {
+                effectParams = {
+                    num_colors: parseInt(linocutParams.numColors.value),
+                    color_boost: parseFloat(linocutParams.colorBoost.value),
+                    outline_thickness: parseInt(linocutParams.outlineThickness.value),
+                    texture_intensity: parseFloat(linocutParams.linocutTexture.value),
+                    contrast: parseFloat(linocutParams.linocutContrast.value),
+                    carve_direction: linocutParams.carveDirection.value
+                };
+            }
+
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: currentFilename,
+                        effect: currentEffect,
+                        params: effectParams
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = data.download_url;
+                    showStatus('Downloaded', 'success');
+                } else {
+                    showStatus(data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Failed', 'error');
+            }
+        });
+
+        // Show status message
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
