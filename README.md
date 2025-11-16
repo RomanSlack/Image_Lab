@@ -1,6 +1,16 @@
-# Image Effects Workshop
+# Image Effects Lab
 
-Transform high-resolution Blender renders with various artistic effects.
+<img src="results/tree_3_v3_paint_stroke.png" alt="Paint Stroke Effect Example" width="600">
+
+A Flask web application for transforming images with various artistic effects including paint strokes, pixelation, blur, edge detection, and more.
+
+## Features
+
+- Web-based interface for easy image processing
+- Multiple artistic effects: paint stroke, pixelation, blur, edge detection, emboss, and more
+- Real-time processing with visual feedback
+- Downloadable processed images
+- Command-line interface also available
 
 ## Setup
 
@@ -10,6 +20,17 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+
+### Web Application
+
+Start the Flask server:
+```bash
+python app.py
+```
+
+Then open your browser to `http://localhost:5000` to use the web interface.
+
+### Command Line
 
 Basic syntax:
 ```bash
