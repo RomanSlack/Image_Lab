@@ -81,6 +81,30 @@ def your_new_effect(self, param1=10, param2=5):
     return processed_image
 ```
 
+## Mathematical Documentation
+
+The Japanese calligraphy effect has been fully documented with its complete mathematical model. See:
+
+- **`japanese_calligraphy_equation.tex`** - LaTeX source with all equations
+- **`japanese_calligraphy_equation.pdf`** - Compiled PDF documentation (4 pages)
+
+The PDF contains the complete unified equation showing how brush strokes are generated, including:
+- Position calculations with sinusoidal curves
+- Edge-following angle determination
+- Variable brush sizing based on image detail
+- Width tapering functions
+- Ink bleed alpha transparency
+
+To view the mathematical documentation:
+```bash
+xdg-open japanese_calligraphy_equation.pdf
+```
+
+To recompile the LaTeX documentation:
+```bash
+pdflatex japanese_calligraphy_equation.tex
+```
+
 ## Output
 
 By default, processed images are saved with the effect name as a suffix (e.g., `tree_render_paint_stroke.png`). Use `--output` to specify a custom path.
